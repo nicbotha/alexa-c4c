@@ -1,0 +1,16 @@
+{
+  "intents": [
+    {
+      "intent": "FindAccountsIntent"
+    },
+    {
+      "intent": "UseAccountIntent",
+      "slots":[
+        {
+          "name": "Account",
+          "type": "LIST_OF_ACCOUNTS"
+        }
+      ]
+    }
+  ]
+}

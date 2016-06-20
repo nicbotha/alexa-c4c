@@ -17,6 +17,7 @@
 		<fasterxml.jackson.version>2.7.5</fasterxml.jackson.version>
 		<slf4j.version>1.7.21</slf4j.version>
 		<aws.lambda.version>1.1.0</aws.lambda.version>
+		<aws.alexa.skillkit.version>1.1.2</aws.alexa.skillkit.version>
 	</properties>
 
 	<dependencies>
@@ -93,6 +94,14 @@
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-lambda-java-core</artifactId>
 			<version>${aws.lambda.version}</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.amazon.alexa</groupId>
+			<artifactId>alexa-skills-kit</artifactId>
+			<version>${aws.alexa.skillkit.version}</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

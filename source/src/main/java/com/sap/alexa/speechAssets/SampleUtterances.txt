@@ -1,0 +1,12 @@
+FindAccountsIntent find my accounts
+FindAccountsIntent find accounts I own
+FindAccountsIntent find accounts I am the owner of
+FindAccountsIntent list my accounts
+FindAccountsIntent list accounts I own
+FindAccountsIntent list accounts I am the owner of
+FindAccountsIntent list more
+UseAccountIntent use account {Account}
+UseAccountIntent list opportunities
+UseAccountIntent find opportunities
+UseAccountIntent list opportunities for {Account}
+UseAccountIntent find opportunities for {Account}

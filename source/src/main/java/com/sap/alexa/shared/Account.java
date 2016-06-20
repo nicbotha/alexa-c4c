@@ -1,6 +1,9 @@
 package com.sap.alexa.shared;
 
-public class Account {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Account implements Serializable{
 	private String AccountID;
 	private String AccountName;
 	private String ObjectID;
@@ -19,6 +22,8 @@ public class Account {
 			this.setOwnerID(value.toString());
 		} else if (key.equals("StatusCode")) {
 			this.setStatusCode(value.toString());
+		}else if (key.equals("UUID")) {
+			this.setUUID(value.toString());
 		}
 	}
 
