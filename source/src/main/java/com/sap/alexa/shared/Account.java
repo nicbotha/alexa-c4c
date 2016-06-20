@@ -80,4 +80,59 @@ public class Account implements Serializable{
 		return "Account [AccountID=" + AccountID + ", AccountName=" + AccountName + ", ObjectID=" + ObjectID + ", OwnerID=" + OwnerID + ", StatusCode=" + StatusCode + ", UUID=" + UUID + "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((AccountID == null) ? 0 : AccountID.hashCode());
+		result = prime * result + ((AccountName == null) ? 0 : AccountName.hashCode());
+		result = prime * result + ((ObjectID == null) ? 0 : ObjectID.hashCode());
+		result = prime * result + ((OwnerID == null) ? 0 : OwnerID.hashCode());
+		result = prime * result + ((StatusCode == null) ? 0 : StatusCode.hashCode());
+		result = prime * result + ((UUID == null) ? 0 : UUID.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Account other = (Account) obj;
+		if (AccountID == null) {
+			if (other.AccountID != null)
+				return false;
+		} else if (!AccountID.equals(other.AccountID))
+			return false;
+		if (AccountName == null) {
+			if (other.AccountName != null)
+				return false;
+		} else if (!AccountName.equals(other.AccountName))
+			return false;
+		if (ObjectID == null) {
+			if (other.ObjectID != null)
+				return false;
+		} else if (!ObjectID.equals(other.ObjectID))
+			return false;
+		if (OwnerID == null) {
+			if (other.OwnerID != null)
+				return false;
+		} else if (!OwnerID.equals(other.OwnerID))
+			return false;
+		if (StatusCode == null) {
+			if (other.StatusCode != null)
+				return false;
+		} else if (!StatusCode.equals(other.StatusCode))
+			return false;
+		if (UUID == null) {
+			if (other.UUID != null)
+				return false;
+		} else if (!UUID.equals(other.UUID))
+			return false;
+		return true;
+	}
+
 }

@@ -18,7 +18,15 @@ import com.sap.alexa.shared.AccountEntityContainer;
 
 public class FindAccountsIntent {
 	private static final Logger log = LoggerFactory.getLogger(FindAccountsIntent.class);
-	private C4CService service = new C4CService();
+	protected C4CService service = null;
+	
+	public FindAccountsIntent() {
+		service = new C4CService();
+	}
+	
+	public FindAccountsIntent(C4CService service) {
+		this.service = service;
+	}
 
 	private enum State {
 		FIND, FIND_MORE
@@ -28,6 +36,7 @@ public class FindAccountsIntent {
 
 	protected SpeechletResponse handleIntent(final Intent intent, final Session session) {
 		log.info(">> handleIntent IntentName={}, sessionId={}", intent.getName(), session.getSessionId());
+		
 		State state = determineState(session);
 		SpeechletResponse response = null;
 
@@ -43,12 +52,14 @@ public class FindAccountsIntent {
 			break;
 		}
 
+		log.info("<< handleIntent SpeechletResponse.shouldEndSession={}", response.getShouldEndSession());
 		return response;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private SpeechletResponse findMoreAccounts(Session session) {
-		log.info(">> findAccounts sessionId={}", session.getSessionId());
+	protected SpeechletResponse findMoreAccounts(Session session) {
+		log.info(">> findMoreAccounts sessionId={}", session.getSessionId());
+		
 		SpeechletResponse response = null;
 
 		try {
@@ -75,7 +86,7 @@ public class FindAccountsIntent {
 
 	}
 
-	private SpeechletResponse findAccounts(Session session) {
+	protected SpeechletResponse findAccounts(Session session) {
 		log.info(">> findAccounts sessionId={}", session.getSessionId());
 		SpeechletResponse response = null;
 
@@ -103,30 +114,37 @@ public class FindAccountsIntent {
 
 	private SpeechletResponse accountsFoundResponse(DataCache<Account> cache) {
 		StringBuffer sb = new StringBuffer();
+		String prompt = null;
+		String reprompt = null;
+		int index = 0;
 		if(cache.index() == 0){
-			sb.append("Found "+ cache.getEntityContainer().getCount() +" accounts.");
+			sb.append("Found "+ cache.getEntityContainer().getCount() +" accounts. ");
 		}
+		
 		for(Account account : cache.getWorkingSet()){
+			sb.append(++index + ", ");
 			sb.append(account.getAccountName());
-			sb.append(",");
+			sb.append(", ");
 		}
+		
+		prompt = sb.toString();
+		prompt = prompt.substring(0, prompt.lastIndexOf(","));
 		
 		if(cache.hasMore()){
-			sb.append("Would you like to hear more?");
+			reprompt = "Would you like to hear more? You can get more result by saying, list more";
 		}
 		
-		return getSpeechletResponse(sb.toString(), null, false);
+		return getSpeechletResponse(prompt, reprompt, true);
 	}
-
 	
-
-	private State determineState(Session session) {
+	protected State determineState(Session session) {
+		log.info(">> determineState sessionId={}", session.getSessionId());
 		State state = State.FIND;
 
 		if (session.getAttribute(ATTR_CACHE) != null) {
 			state = State.FIND_MORE;
 		}
-
+		log.info("<< determineState State={}", state.toString());
 		return state;
 	}
 
@@ -142,6 +160,8 @@ public class FindAccountsIntent {
 	 * Returns a Speechlet response for a speech and reprompt text.
 	 */
 	private SpeechletResponse getSpeechletResponse(String speechText, String repromptText, boolean isAskResponse) {
+		log.info(">> getSpeechletResponse speechText={}, repromptText={}, isAskResponse={}", speechText, repromptText, isAskResponse);
+		
 		// Create the Simple card content.
 		SimpleCard card = new SimpleCard();
 		card.setTitle("SAP Accounts");
@@ -152,7 +172,6 @@ public class FindAccountsIntent {
 		speech.setText(speechText);
 
 		if (isAskResponse) {
-			// Create reprompt
 			PlainTextOutputSpeech repromptSpeech = new PlainTextOutputSpeech();
 			repromptSpeech.setText(repromptText);
 			Reprompt reprompt = new Reprompt();

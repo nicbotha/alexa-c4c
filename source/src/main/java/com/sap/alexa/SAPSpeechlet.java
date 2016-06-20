@@ -32,22 +32,23 @@ public class SAPSpeechlet implements Speechlet {
 	}
 
 	public SpeechletResponse onIntent(IntentRequest request, Session session) throws SpeechletException {
-		log.info("onIntent requestId={}, sessionId={}", request.getRequestId(), session.getSessionId());
+		log.info(">> onIntent requestId={}, sessionId={}", request.getRequestId(), session.getSessionId());
 
+		SpeechletResponse response = null;
+		
 		// Get intent from the request object.
 		Intent intent = request.getIntent();
 		String intentName = (intent != null) ? intent.getName() : null;
 
-		// Note: If the session is started with an intent, no welcome message
-		// will be rendered;
-		// rather, the intent specific response will be returned.
 		if ("FindAccountsIntent".equals(intentName)) {
-			return findAccountsIntent.handleIntent(intent, session);
+			response= findAccountsIntent.handleIntent(intent, session);
 		} else if ("UseAccountIntent".equals(intentName)) {
 		} else {
 			throw new SpeechletException("Invalid Intent");
 		}
-		return null;
+		
+		log.info("<< onIntent SpeechletResponse.shouldEndSession={}", response.getShouldEndSession());
+		return response;
 	}
 
 	public void onSessionEnded(SessionEndedRequest request, Session session) throws SpeechletException {

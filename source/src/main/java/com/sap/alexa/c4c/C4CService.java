@@ -41,7 +41,7 @@ public class C4CService {
 	 * Find all Accounts for owner that is active.
 	 */
 	public AccountEntityContainer findAccountsByOwner(String ownerID, String skip) throws IOException, ODataException {
-		log.info("findAccountsByOwner ownerId={}, skip={}", ownerID, skip);
+		log.info(">> findAccountsByOwner ownerId={}, skip={}", ownerID, skip);
 		ArrayList<Account> result = new ArrayList<Account>();
 
 		String queryString = QRY_ACCOUNTSBYOWNER.replaceFirst("@1", ownerID);
@@ -62,7 +62,7 @@ public class C4CService {
 	 * Find all Acounts with name starting with search criteria.
 	 */
 	public AccountEntityContainer findAccountByName(String accountName, String skip) throws IOException, ODataException {
-		log.info("findAccountByName accountName={}, skip={}", accountName, skip);
+		log.info(">> findAccountByName accountName={}, skip={}", accountName, skip);
 		ArrayList<Account> result = new ArrayList<Account>();
 
 		String queryString = QRY_ACCOUNTBYNAME.replaceFirst("@1", accountName);

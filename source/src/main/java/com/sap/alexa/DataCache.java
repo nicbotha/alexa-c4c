@@ -40,8 +40,7 @@ public class DataCache<K> implements Serializable {
 	}
 
 	public int skip() {
-		int skip = index * 5;
-		return skip == 0 ? 5 : skip;
+		return (index + 1) * 5;
 	}
 	
 	public K find(){

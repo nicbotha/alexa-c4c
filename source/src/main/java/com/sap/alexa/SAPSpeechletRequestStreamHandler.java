@@ -14,7 +14,7 @@ public class SAPSpeechletRequestStreamHandler extends SpeechletRequestStreamHand
          * Alexa Skill and put the relevant Application Ids in this Set.
          */
         supportedApplicationIds = new HashSet<String>();
-        supportedApplicationIds.add("amzn1.echo-sdk-ams.app.[unique-value-here]");
+        supportedApplicationIds.add("amzn1.echo-sdk-ams.app.26e2c935-24ae-46c9-846a-9e7b790290d5");
     }
 
     public SAPSpeechletRequestStreamHandler() {

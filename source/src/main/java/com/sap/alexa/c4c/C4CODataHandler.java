@@ -36,6 +36,7 @@ public class C4CODataHandler {
 	}
 
 	public ODataFeed readFeed(String contentType, String entitySetName, String options) throws IllegalStateException, IOException, EntityProviderException, EdmException {
+		log.info(">> readFeed contentType={}, entitySetName={}, options={}", contentType, entitySetName, options);
 		HttpResponse response = null;
 		Edm edm = readEdm();
 		EdmEntityContainer entityContainer = edm.getDefaultEntityContainer();
@@ -43,30 +44,31 @@ public class C4CODataHandler {
 
 		httpWrapper.setRequestMethod(RequestMethod.GET);
 		httpWrapper.setPathNameURL(pathNameURL);
-		
+
 		response = httpWrapper.execute();
-		
-		InputStream content = response.getEntity().getContent();		
+
+		InputStream content = response.getEntity().getContent();
 		return EntityProvider.readFeed(contentType, entityContainer.getEntitySet(entitySetName), content, EntityProviderReadProperties.init().build());
 	}
 
 	public ODataEntry readEntry(String contentType, String entitySetName, String keyValue, String options) throws IllegalStateException, IOException, EdmException, EntityProviderException {
+		log.info(">> readEntry contentType={}, entitySetName={}, keyValue={}, options={}", contentType, entitySetName, keyValue, options);
 		HttpResponse response = null;
 		EdmEntityContainer entityContainer = readEdm().getDefaultEntityContainer();
 		String pathNameURL = createURLPathName(entitySetName, keyValue, options);
 
 		httpWrapper.setRequestMethod(RequestMethod.GET);
 		httpWrapper.setPathNameURL(pathNameURL);
-		
+
 		response = httpWrapper.execute();
-		
+
 		InputStream content = response.getEntity().getContent();
 
 		return EntityProvider.readEntry(contentType, entityContainer.getEntitySet(entitySetName), content, EntityProviderReadProperties.init().build());
 	}
 
 	protected Edm readEdm() throws EntityProviderException, IllegalStateException, IOException {
-		log.debug(">> readEdm()");
+		log.info(">> readEdm");
 		HttpResponse response = null;
 
 		if (edm != null) {
@@ -81,19 +83,20 @@ public class C4CODataHandler {
 		response = httpWrapper.execute();
 		csrfToken = response.getFirstHeader(HttpWrapper.HTTP_HEADER_CSRF_TOKEN).getValue();
 		edm = EntityProvider.readMetadata(response.getEntity().getContent(), false);
-		
-		log.debug("<< readEdm() Edm="+edm);
+
+		log.debug("<< readEdm() Edm=" + edm);
 		return edm;
 	}
 
-	
 	/**
-	 * Utility method to create the path for the url. Path name to contain any paths, ids or queries. 
-	 * e.g. /peopleCollection(100)?format=json
+	 * Utility method to create the path for the url. Path name to contain any
+	 * paths, ids or queries. e.g. /peopleCollection(100)?format=json
 	 * 
-	 * */
+	 */
 	private String createURLPathName(String entitySetName, String id, String options) {
-
+		log.info(">> createURLPathName entitySetName={}, id={}, options={}", entitySetName, id, options);
+		
+		String response = null;
 		final StringBuilder pathUri = new StringBuilder(entitySetName);
 		if (id != null) {
 			pathUri.append("('").append(id).append("')");
@@ -104,8 +107,11 @@ public class C4CODataHandler {
 				pathUri.append(options);
 			}
 		}
+		
+		response = pathUri.toString();
 
-		return pathUri.toString();
+		log.info("<< createURLPathName URL={}", response);
+		return response;
 	}
 
 	protected void loadConfig() {
