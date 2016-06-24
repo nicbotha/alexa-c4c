@@ -9,16 +9,25 @@ import org.slf4j.LoggerFactory;
 import com.amazon.speech.slu.Intent;
 import com.amazon.speech.speechlet.Session;
 import com.amazon.speech.speechlet.SpeechletResponse;
-import com.amazon.speech.ui.PlainTextOutputSpeech;
-import com.amazon.speech.ui.Reprompt;
-import com.amazon.speech.ui.SimpleCard;
 import com.sap.alexa.c4c.C4CService;
 import com.sap.alexa.shared.Account;
 import com.sap.alexa.shared.AccountEntityContainer;
 
 public class FindAccountsIntent {
 	private static final Logger log = LoggerFactory.getLogger(FindAccountsIntent.class);
+
+	public enum State {
+		FIND, FIND_MORE
+	};
+	
 	protected C4CService service = null;
+	public static final String REPROMPT_LIST_MORE_ACCOUNT = "To use an account say, use account.  To list more accounts say, list more.";
+	public static final String REPROMPT_USE_ACCOUNT = "Please select an account by saying, use account.";
+	public static final String PROMPT_NOT_FOUND_ACCOUNT = "Could not find any accounts.";
+	public static final String PROMPT_FIRST_TIME_ACCOUNT = "Found %s accounts. ";
+	public static final String ATTR_CACHE = "accountCache";
+	private static final String PROMPT_TECHNICAL_ERROR = "A technical error occured.  Your request could not be completed.";
+	protected String ownerId = "1000";
 	
 	public FindAccountsIntent() {
 		service = new C4CService();
@@ -27,12 +36,6 @@ public class FindAccountsIntent {
 	public FindAccountsIntent(C4CService service) {
 		this.service = service;
 	}
-
-	private enum State {
-		FIND, FIND_MORE
-	};
-
-	private static final String ATTR_CACHE = "accountCache";
 
 	protected SpeechletResponse handleIntent(final Intent intent, final Session session) {
 		log.info(">> handleIntent IntentName={}, sessionId={}", intent.getName(), session.getSessionId());
@@ -56,15 +59,14 @@ public class FindAccountsIntent {
 		return response;
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected SpeechletResponse findMoreAccounts(Session session) {
 		log.info(">> findMoreAccounts sessionId={}", session.getSessionId());
 		
 		SpeechletResponse response = null;
 
 		try {
-			DataCache<Account> cache = (DataCache<Account>) session.getAttribute(ATTR_CACHE);
-			AccountEntityContainer accountEntityContainer = service.findAccountsByOwner("1000", String.valueOf(cache.skip()));
+			AccountDataCache cache = (AccountDataCache) session.getAttribute(ATTR_CACHE);
+			AccountEntityContainer accountEntityContainer = service.findAccountsByOwner(this.ownerId, String.valueOf(cache.skip()));
 			
 			if(accountEntityContainer.isEmpty()){
 				response = emptyServiceResult();
@@ -82,6 +84,7 @@ public class FindAccountsIntent {
 			response = errorResponse();
 		}
 		
+		log.info("<< findMoreAccounts SpeechletResponse={}", response);
 		return response;
 
 	}
@@ -91,12 +94,12 @@ public class FindAccountsIntent {
 		SpeechletResponse response = null;
 
 		try {
-			AccountEntityContainer accountEntityContainer = service.findAccountsByOwner("1000", "0");
+			AccountEntityContainer accountEntityContainer = service.findAccountsByOwner(this.ownerId, "0");
 			
 			if(accountEntityContainer.isEmpty()){
 				response = emptyServiceResult();
 			}else{
-				DataCache<Account> cache = new DataCache<Account>(accountEntityContainer);
+				AccountDataCache cache = new AccountDataCache(accountEntityContainer);
 				session.setAttribute(ATTR_CACHE, cache);				
 				response = accountsFoundResponse(cache);
 			}
@@ -109,16 +112,18 @@ public class FindAccountsIntent {
 			response = errorResponse();
 		}
 		
+		log.info("<< findAccounts SpeechletResponse={}", response);
 		return response;
 	}
 
-	private SpeechletResponse accountsFoundResponse(DataCache<Account> cache) {
+	protected SpeechletResponse accountsFoundResponse(DataCache<Account> cache) {
+		log.info(">> accountsFoundResponse DataCache<Account>={}", cache);
 		StringBuffer sb = new StringBuffer();
 		String prompt = null;
-		String reprompt = null;
 		int index = 0;
+		
 		if(cache.index() == 0){
-			sb.append("Found "+ cache.getEntityContainer().getCount() +" accounts. ");
+			sb.append(String.format(FindAccountsIntent.PROMPT_FIRST_TIME_ACCOUNT,  cache.getEntityContainer().getCount()));
 		}
 		
 		for(Account account : cache.getWorkingSet()){
@@ -130,11 +135,10 @@ public class FindAccountsIntent {
 		prompt = sb.toString();
 		prompt = prompt.substring(0, prompt.lastIndexOf(","));
 		
-		if(cache.hasMore()){
-			reprompt = "Would you like to hear more? You can get more result by saying, list more";
-		}
+		SpeechletResponse response = SpeechletResponseHelper.getSpeechletResponse(prompt, (cache.hasMore()? REPROMPT_LIST_MORE_ACCOUNT : REPROMPT_USE_ACCOUNT), true);
 		
-		return getSpeechletResponse(prompt, reprompt, true);
+		log.info("<< accountsFoundResponse SpeechletResponse={}", response);
+		return response;
 	}
 	
 	protected State determineState(Session session) {
@@ -148,39 +152,13 @@ public class FindAccountsIntent {
 		return state;
 	}
 
-	private SpeechletResponse emptyServiceResult(){
-		return getSpeechletResponse("No account could be found.", null, false);
+	public SpeechletResponse emptyServiceResult(){
+		return SpeechletResponseHelper.getSpeechletResponse(PROMPT_NOT_FOUND_ACCOUNT, null, false);
 	}
 	
 	private SpeechletResponse errorResponse() {
-		return getSpeechletResponse("A technical error occured.  Your request could not be completed.", null, false);
+		return SpeechletResponseHelper.getSpeechletResponse(PROMPT_TECHNICAL_ERROR, null, false);
 	}
 
-	/**
-	 * Returns a Speechlet response for a speech and reprompt text.
-	 */
-	private SpeechletResponse getSpeechletResponse(String speechText, String repromptText, boolean isAskResponse) {
-		log.info(">> getSpeechletResponse speechText={}, repromptText={}, isAskResponse={}", speechText, repromptText, isAskResponse);
-		
-		// Create the Simple card content.
-		SimpleCard card = new SimpleCard();
-		card.setTitle("SAP Accounts");
-		card.setContent(speechText);
 
-		// Create the plain text output.
-		PlainTextOutputSpeech speech = new PlainTextOutputSpeech();
-		speech.setText(speechText);
-
-		if (isAskResponse) {
-			PlainTextOutputSpeech repromptSpeech = new PlainTextOutputSpeech();
-			repromptSpeech.setText(repromptText);
-			Reprompt reprompt = new Reprompt();
-			reprompt.setOutputSpeech(repromptSpeech);
-
-			return SpeechletResponse.newAskResponse(speech, reprompt, card);
-
-		} else {
-			return SpeechletResponse.newTellResponse(speech, card);
-		}
-	}
 }

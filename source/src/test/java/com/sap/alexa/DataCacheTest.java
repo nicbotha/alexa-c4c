@@ -1,11 +1,13 @@
 package com.sap.alexa;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
 
+import com.amazon.speech.speechlet.SpeechletResponse;
 import com.sap.alexa.shared.Account;
 import com.sap.alexa.shared.EntityContainer;
 
@@ -31,6 +33,22 @@ public class DataCacheTest {
 		assertTrue(cache.getWorkingSet().containsAll(expectedAccounts2));
 		assertEquals(1, cache.index());
 		assertEquals(10, cache.skip());
+	}
+	
+	@Test
+	public void hasMore_False_Test() throws Exception{
+		EntityContainer<Account> entityContainer = new EntityContainer<Account>(Arrays.asList(generateAccount(),generateAccount(),generateAccount(),generateAccount(),generateAccount()), 5);
+		DataCache<Account> cache = new DataCache<Account>(entityContainer);
+		
+		assertFalse(cache.hasMore());		
+	}
+	
+	@Test
+	public void hasMore_True_Test() throws Exception{
+		EntityContainer<Account> entityContainer = new EntityContainer<Account>(Arrays.asList(generateAccount(),generateAccount(),generateAccount(),generateAccount(),generateAccount()), 6);
+		DataCache<Account> cache = new DataCache<Account>(entityContainer);
+		
+		assertTrue(cache.hasMore());		
 	}
 	
 	private List<Account> generateAccounts(int count){

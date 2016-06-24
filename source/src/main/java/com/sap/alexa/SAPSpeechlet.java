@@ -12,9 +12,6 @@ import com.amazon.speech.speechlet.SessionStartedRequest;
 import com.amazon.speech.speechlet.Speechlet;
 import com.amazon.speech.speechlet.SpeechletException;
 import com.amazon.speech.speechlet.SpeechletResponse;
-import com.amazon.speech.ui.PlainTextOutputSpeech;
-import com.amazon.speech.ui.Reprompt;
-import com.amazon.speech.ui.SimpleCard;
 
 public class SAPSpeechlet implements Speechlet {
 	private static final Logger log = LoggerFactory.getLogger(SAPSpeechlet.class);
@@ -22,7 +19,6 @@ public class SAPSpeechlet implements Speechlet {
 	private FindAccountsIntent findAccountsIntent = new FindAccountsIntent();
 
 	public void onSessionStarted(SessionStartedRequest request, Session session) throws SpeechletException {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -42,7 +38,7 @@ public class SAPSpeechlet implements Speechlet {
 
 		if ("FindAccountsIntent".equals(intentName)) {
 			response= findAccountsIntent.handleIntent(intent, session);
-		} else if ("UseAccountIntent".equals(intentName)) {
+		}else if ("UseAccountIntent".equals(intentName)) {
 		} else {
 			throw new SpeechletException("Invalid Intent");
 		}
@@ -52,7 +48,6 @@ public class SAPSpeechlet implements Speechlet {
 	}
 
 	public void onSessionEnded(SessionEndedRequest request, Session session) throws SpeechletException {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -62,37 +57,7 @@ public class SAPSpeechlet implements Speechlet {
 	 * @return SpeechletResponse spoken and visual welcome message
 	 */
 	private SpeechletResponse getWelcomeResponse() {
-		// Create the welcome message.
 		String speechText = "Welcome to SAP. You can find accounts by saying, find my accounts";
-		String repromptText = "Please tell me how I may be of assistance?";
-
-		return getSpeechletResponse(speechText, repromptText, true);
+		return SpeechletResponseHelper.getSpeechletResponse(speechText, null, false);
 	}
-
-	/**
-	 * Returns a Speechlet response for a speech and reprompt text.
-	 */
-	private SpeechletResponse getSpeechletResponse(String speechText, String repromptText, boolean isAskResponse) {
-		// Create the Simple card content.
-		SimpleCard card = new SimpleCard();
-		card.setTitle("Session");
-		card.setContent(speechText);
-
-		// Create the plain text output.
-		PlainTextOutputSpeech speech = new PlainTextOutputSpeech();
-		speech.setText(speechText);
-
-		if (isAskResponse) {
-			PlainTextOutputSpeech repromptSpeech = new PlainTextOutputSpeech();
-			repromptSpeech.setText(repromptText);
-			Reprompt reprompt = new Reprompt();
-			reprompt.setOutputSpeech(repromptSpeech);
-
-			return SpeechletResponse.newAskResponse(speech, reprompt, card);
-
-		} else {
-			return SpeechletResponse.newTellResponse(speech, card);
-		}
-	}
-
 }
