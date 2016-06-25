@@ -19,7 +19,7 @@ public class FindAccountsIntent {
 	public enum State {
 		FIND, FIND_MORE
 	};
-	
+
 	protected C4CService service = null;
 	public static final String REPROMPT_LIST_MORE_ACCOUNT = "To use an account say, use account.  To list more accounts say, list more.";
 	public static final String REPROMPT_USE_ACCOUNT = "Please select an account by saying, use account.";
@@ -28,18 +28,18 @@ public class FindAccountsIntent {
 	public static final String ATTR_CACHE = "accountCache";
 	private static final String PROMPT_TECHNICAL_ERROR = "A technical error occured.  Your request could not be completed.";
 	protected String ownerId = "1000";
-	
+
 	public FindAccountsIntent() {
 		service = new C4CService();
 	}
-	
+
 	public FindAccountsIntent(C4CService service) {
 		this.service = service;
 	}
 
 	protected SpeechletResponse handleIntent(final Intent intent, final Session session) {
 		log.info(">> handleIntent IntentName={}, sessionId={}", intent.getName(), session.getSessionId());
-		
+
 		State state = determineState(session);
 		SpeechletResponse response = null;
 
@@ -58,24 +58,34 @@ public class FindAccountsIntent {
 		log.info("<< handleIntent SpeechletResponse.shouldEndSession={}", response.getShouldEndSession());
 		return response;
 	}
-	
+
 	protected SpeechletResponse findMoreAccounts(Session session) {
 		log.info(">> findMoreAccounts sessionId={}", session.getSessionId());
-		
+
 		SpeechletResponse response = null;
+		AccountDataCache cache = new AccountDataCache();
 
 		try {
-			AccountDataCache cache = (AccountDataCache) session.getAttribute(ATTR_CACHE);
+			String encodedJson = (String) session.getAttribute(ATTR_CACHE);
+
+			if (encodedJson != null) {
+				try {
+					cache = DataCacheParser.toAccountDataCache(encodedJson, true);
+				} catch (Exception e) {
+					log.error("Could not decode AccountDataCache from session json={}, error={}", encodedJson, e);
+				}
+			}
+
 			AccountEntityContainer accountEntityContainer = service.findAccountsByOwner(this.ownerId, String.valueOf(cache.skip()));
-			
-			if(accountEntityContainer.isEmpty()){
+
+			if (accountEntityContainer.isEmpty()) {
 				response = emptyServiceResult();
-			}else{
+			} else {
 				cache.addEntityContainer(accountEntityContainer);
-				session.setAttribute(ATTR_CACHE, cache);				
+				session.setAttribute(ATTR_CACHE, DataCacheParser.toJson(cache, true));
 				response = accountsFoundResponse(cache);
 			}
-			
+
 		} catch (IOException e) {
 			log.error("Cannot find Accounts from C4C.", e);
 			response = errorResponse();
@@ -83,7 +93,7 @@ public class FindAccountsIntent {
 			log.error("Cannot find Accounts from C4C.", e);
 			response = errorResponse();
 		}
-		
+
 		log.info("<< findMoreAccounts SpeechletResponse={}", response);
 		return response;
 
@@ -95,15 +105,15 @@ public class FindAccountsIntent {
 
 		try {
 			AccountEntityContainer accountEntityContainer = service.findAccountsByOwner(this.ownerId, "0");
-			
-			if(accountEntityContainer.isEmpty()){
+
+			if (accountEntityContainer.isEmpty()) {
 				response = emptyServiceResult();
-			}else{
+			} else {
 				AccountDataCache cache = new AccountDataCache(accountEntityContainer);
-				session.setAttribute(ATTR_CACHE, cache);				
+				session.setAttribute(ATTR_CACHE, DataCacheParser.toJson(cache, true));
 				response = accountsFoundResponse(cache);
 			}
-			
+
 		} catch (IOException e) {
 			log.error("Cannot find Accounts from C4C.", e);
 			response = errorResponse();
@@ -111,7 +121,7 @@ public class FindAccountsIntent {
 			log.error("Cannot find Accounts from C4C.", e);
 			response = errorResponse();
 		}
-		
+
 		log.info("<< findAccounts SpeechletResponse={}", response);
 		return response;
 	}
@@ -121,26 +131,33 @@ public class FindAccountsIntent {
 		StringBuffer sb = new StringBuffer();
 		String prompt = null;
 		int index = 0;
-		
-		if(cache.index() == 0){
-			sb.append(String.format(FindAccountsIntent.PROMPT_FIRST_TIME_ACCOUNT,  cache.getEntityContainer().getCount()));
+
+		if (cache.getIndex() == 0) {
+			sb.append(String.format(FindAccountsIntent.PROMPT_FIRST_TIME_ACCOUNT, cache.getEntityContainer().getCount()));
 		}
-		
-		for(Account account : cache.getWorkingSet()){
+
+		for (Account account : cache.getWorkingSet()) {
 			sb.append(++index + ", ");
 			sb.append(account.getAccountName());
 			sb.append(", ");
 		}
-		
+
 		prompt = sb.toString();
 		prompt = prompt.substring(0, prompt.lastIndexOf(","));
-		
-		SpeechletResponse response = SpeechletResponseHelper.getSpeechletResponse(prompt, (cache.hasMore()? REPROMPT_LIST_MORE_ACCOUNT : REPROMPT_USE_ACCOUNT), true);
-		
+		prompt = prompt.concat(". ");
+
+		if (cache.hasMore()) {
+			prompt = prompt.concat(REPROMPT_LIST_MORE_ACCOUNT);
+		} else{
+			prompt = prompt.concat(REPROMPT_USE_ACCOUNT);
+		}
+
+		SpeechletResponse response = SpeechletResponseHelper.getSpeechletResponse(prompt, (cache.hasMore() ? REPROMPT_LIST_MORE_ACCOUNT : REPROMPT_USE_ACCOUNT), true);
+
 		log.info("<< accountsFoundResponse SpeechletResponse={}", response);
 		return response;
 	}
-	
+
 	protected State determineState(Session session) {
 		log.info(">> determineState sessionId={}", session.getSessionId());
 		State state = State.FIND;
@@ -152,13 +169,12 @@ public class FindAccountsIntent {
 		return state;
 	}
 
-	public SpeechletResponse emptyServiceResult(){
+	public SpeechletResponse emptyServiceResult() {
 		return SpeechletResponseHelper.getSpeechletResponse(PROMPT_NOT_FOUND_ACCOUNT, null, false);
 	}
-	
+
 	private SpeechletResponse errorResponse() {
 		return SpeechletResponseHelper.getSpeechletResponse(PROMPT_TECHNICAL_ERROR, null, false);
 	}
-
 
 }

@@ -22,7 +22,7 @@ public class DataCacheTest {
 		List<Account> expectedAccounts1 = generateAccounts(5);
 		DataCache<Account> cache = new DataCache<Account>(new EntityContainer<Account>(expectedAccounts1, 12));
 		
-		assertEquals(0, cache.index());
+		assertEquals(0, cache.getIndex());
 		assertEquals(5, cache.skip());
 		assertTrue(cache.getWorkingSet().containsAll(expectedAccounts1));	
 		
@@ -31,7 +31,7 @@ public class DataCacheTest {
 		
 		assertFalse(cache.getWorkingSet().containsAll(expectedAccounts1));
 		assertTrue(cache.getWorkingSet().containsAll(expectedAccounts2));
-		assertEquals(1, cache.index());
+		assertEquals(1, cache.getIndex());
 		assertEquals(10, cache.skip());
 	}
 	

@@ -29,7 +29,7 @@ import com.sap.alexa.shared.EntityContainer;
 
 public class FindAccountsIntentTest {
 	private FindAccountsIntent findAccountsIntent;
-	private static final String PROMPT_FIRST_TIME_EXPECTED = "Found 50 accounts.";
+	private static final String PROMPT_FIRST_TIME_EXPECTED = "Found 50 accounts. ";
 
 	@Before
 	public void setup() {
@@ -98,96 +98,166 @@ public class FindAccountsIntentTest {
 		assertNull(speechletResponse.getReprompt());
 		assertEquals(FindAccountsIntent.PROMPT_NOT_FOUND_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getOutputSpeech()).getText());
 	}
-	
+
 	/**
 	 * No accounts could be found reponse
-	 * */
+	 */
 	@Test
-	public void findAccounts_NOT_FOUND_Test() throws Exception{
+	public void findAccounts_NOT_FOUND_Test() throws Exception {
 		this.findAccountsIntent.service = createMockService();
 		this.findAccountsIntent.ownerId = "0";
 		SpeechletResponse speechletResponse = findAccountsIntent.findAccounts(Session.builder().withSessionId(UUID.randomUUID().toString()).build());
-		
+
 		assertTrue(speechletResponse.getShouldEndSession());
 		assertNull(speechletResponse.getReprompt());
 		assertEquals(FindAccountsIntent.PROMPT_NOT_FOUND_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getOutputSpeech()).getText());
 	}
-	
+
 	/**
 	 * Only found 5 accounts, so user should choose which one to use
-	 * */
+	 */
 	@Test
-	public void findAccounts_FOUND_5_Test() throws Exception{
+	public void findAccounts_FOUND_5_Test() throws Exception {
 		this.findAccountsIntent.service = createMockService();
 		this.findAccountsIntent.ownerId = "5";
 		SpeechletResponse speechletResponse = findAccountsIntent.findAccounts(Session.builder().withSessionId(UUID.randomUUID().toString()).build());
-		
+
 		assertFalse(speechletResponse.getShouldEndSession());
 		assertNotNull(speechletResponse.getReprompt());
 		assertNotNull(speechletResponse.getReprompt().getOutputSpeech());
 		assertEquals(FindAccountsIntent.REPROMPT_USE_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getReprompt().getOutputSpeech()).getText());
 	}
-	
+
 	/**
-	 * Found more than 5 accounts, so user should either choose which one to use or request to list more
-	 * */
+	 * Found more than 5 accounts, so user should either choose which one to use
+	 * or request to list more
+	 */
 	@Test
-	public void findAccounts_Many_Test() throws Exception{
+	public void findAccounts_Many_Test() throws Exception {
 		this.findAccountsIntent.service = createMockService();
 		this.findAccountsIntent.ownerId = "12";
 		SpeechletResponse speechletResponse = findAccountsIntent.findAccounts(Session.builder().withSessionId(UUID.randomUUID().toString()).build());
-		
+
 		assertFalse(speechletResponse.getShouldEndSession());
 		assertNotNull(speechletResponse.getReprompt());
 		assertNotNull(speechletResponse.getReprompt().getOutputSpeech());
 		assertEquals(FindAccountsIntent.REPROMPT_LIST_MORE_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getReprompt().getOutputSpeech()).getText());
 	}
-	
+
 	/**
 	 * No accounts could be found reponse
-	 * */
+	 */
 	@Test
-	public void handleIntent_FIND_NOT_FOUND_Test() throws Exception{
+	public void handleIntent_FIND_NOT_FOUND_Test() throws Exception {
 		this.findAccountsIntent.service = createMockService();
 		this.findAccountsIntent.ownerId = "0";
 		this.findAccountsIntent.handleIntent(Intent.builder().withName("FindAccountsIntent").build(), Session.builder().withSessionId(UUID.randomUUID().toString()).withIsNew(true).build());
 		SpeechletResponse speechletResponse = findAccountsIntent.findAccounts(Session.builder().withSessionId(UUID.randomUUID().toString()).build());
-		
+
 		assertTrue(speechletResponse.getShouldEndSession());
 		assertNull(speechletResponse.getReprompt());
 		assertEquals(FindAccountsIntent.PROMPT_NOT_FOUND_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getOutputSpeech()).getText());
 	}
-	
+
 	/**
 	 * Only found 5 accounts, so user should choose which one to use
-	 * */
+	 */
 	@Test
-	public void handleIntent_FIND_5_Test() throws Exception{
+	public void handleIntent_FIND_5_Test() throws Exception {
 		this.findAccountsIntent.service = createMockService();
 		this.findAccountsIntent.ownerId = "5";
 		this.findAccountsIntent.handleIntent(Intent.builder().withName("FindAccountsIntent").build(), Session.builder().withSessionId(UUID.randomUUID().toString()).withIsNew(true).build());
 		SpeechletResponse speechletResponse = findAccountsIntent.findAccounts(Session.builder().withSessionId(UUID.randomUUID().toString()).build());
-		
+
 		assertFalse(speechletResponse.getShouldEndSession());
 		assertNotNull(speechletResponse.getReprompt());
 		assertNotNull(speechletResponse.getReprompt().getOutputSpeech());
 		assertEquals(FindAccountsIntent.REPROMPT_USE_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getReprompt().getOutputSpeech()).getText());
 	}
-	
+
 	/**
 	 * Only found 5 accounts, so user should choose which one to use
-	 * */
+	 */
 	@Test
-	public void handleIntent_Many_Test() throws Exception{
+	public void handleIntent_Many_Test() throws Exception {
 		this.findAccountsIntent.service = createMockService();
 		this.findAccountsIntent.ownerId = "12";
 		this.findAccountsIntent.handleIntent(Intent.builder().withName("FindAccountsIntent").build(), Session.builder().withSessionId(UUID.randomUUID().toString()).withIsNew(true).build());
 		SpeechletResponse speechletResponse = findAccountsIntent.findAccounts(Session.builder().withSessionId(UUID.randomUUID().toString()).build());
-		
+
 		assertFalse(speechletResponse.getShouldEndSession());
 		assertNotNull(speechletResponse.getReprompt());
 		assertNotNull(speechletResponse.getReprompt().getOutputSpeech());
 		assertEquals(FindAccountsIntent.REPROMPT_LIST_MORE_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getReprompt().getOutputSpeech()).getText());
+	}
+
+	/**
+	 * *************************************************************************
+	 * ******** The following section will test a response from the user to list
+	 * more accounts. *
+	 * *************************************************************************
+	 * ********
+	 */
+
+	/**
+	 * User asked to list more accounts but none could be found.
+	 */
+	@Test
+	public void findMoreAccounts_NOT_FOUND_Test() throws Exception {
+		this.findAccountsIntent.service = createMockService();
+		this.findAccountsIntent.ownerId = "0";
+
+		AccountEntityContainer entityContainer = new AccountEntityContainer(Arrays.asList(generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount()), 12);
+		AccountDataCache cache = new AccountDataCache(entityContainer);
+		Session session = Session.builder().withIsNew(false).withSessionId(UUID.randomUUID().toString()).build();
+		session.setAttribute(FindAccountsIntent.ATTR_CACHE, DataCacheParser.toJson(cache, true));
+
+		SpeechletResponse speechletResponse = findAccountsIntent.findMoreAccounts(session);
+
+		assertTrue(speechletResponse.getShouldEndSession());
+		assertNull(speechletResponse.getReprompt());
+		assertEquals(FindAccountsIntent.PROMPT_NOT_FOUND_ACCOUNT, ((PlainTextOutputSpeech) speechletResponse.getOutputSpeech()).getText());
+	}
+
+	/**
+	 * User asked to list more accounts.
+	 */
+	@Test
+	public void findMoreAccounts_Next5_Test() throws Exception {
+		this.findAccountsIntent.service = createMockService();
+		this.findAccountsIntent.ownerId = "5";
+
+		AccountEntityContainer entityContainer = new AccountEntityContainer(Arrays.asList(generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount()), 12);
+		AccountDataCache cache = new AccountDataCache(entityContainer);
+		Session session = Session.builder().withIsNew(false).withSessionId(UUID.randomUUID().toString()).build();
+		session.setAttribute(FindAccountsIntent.ATTR_CACHE, DataCacheParser.toJson(cache, true));
+
+		//User wants 5 more
+		SpeechletResponse speechletResponse = findAccountsIntent.findMoreAccounts(session);
+
+		assertFalse(speechletResponse.getShouldEndSession());
+		
+		AccountDataCache updatedCache = DataCacheParser.toAccountDataCache((String)session.getAttribute(FindAccountsIntent.ATTR_CACHE),true);
+		
+		assertEquals(1, updatedCache.getIndex());
+		assertEquals(10, updatedCache.skip());
+		assertEquals(12, updatedCache.getEntityContainer().getCount());
+		assertEquals(10, updatedCache.getEntityContainer().getEntities().size());
+		assertTrue(updatedCache.hasMore());
+		
+		//User wants the last 2
+		this.findAccountsIntent.ownerId = "2";
+		speechletResponse = findAccountsIntent.findMoreAccounts(session);
+
+		assertFalse(speechletResponse.getShouldEndSession());
+		
+		updatedCache = DataCacheParser.toAccountDataCache((String)session.getAttribute(FindAccountsIntent.ATTR_CACHE),true);
+		
+		assertEquals(2, updatedCache.getIndex());
+		assertEquals(15, updatedCache.skip());
+		assertEquals(12, updatedCache.getEntityContainer().getCount());
+		assertEquals(12, updatedCache.getEntityContainer().getEntities().size());
+		assertFalse(updatedCache.hasMore());
 	}
 
 	@Test
@@ -211,7 +281,9 @@ public class FindAccountsIntentTest {
 			public AccountEntityContainer findAccountsByOwner(String ownerID, String skip) throws IOException, ODataException {
 				if (ownerID == "0") {
 					return new AccountEntityContainer(null, 0);
-				} else if (ownerID == "5") {
+				} else if (ownerID == "2") {
+					return new AccountEntityContainer(Arrays.asList(generateAccount(), generateAccount()), 2);
+				}	else if (ownerID == "5") {
 					return new AccountEntityContainer(Arrays.asList(generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount()), 5);
 				} else {
 					return new AccountEntityContainer(Arrays.asList(generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount(), generateAccount()), 12);

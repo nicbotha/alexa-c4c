@@ -13,8 +13,9 @@
 		<apache.httpclient.version>4.5.2</apache.httpclient.version>
 		<apache.olingo.version>2.0.6</apache.olingo.version>
 		<apache.commons-io.version>1.3.2</apache.commons-io.version>
-		<fasterxml.jackson.version>2.7.5</fasterxml.jackson.version>
+		<fasterxml.jackson.version>2.3.2</fasterxml.jackson.version>
 		<slf4j.version>1.7.21</slf4j.version>
+		<log4j.version>1.2.17</log4j.version>
 		<aws.lambda.version>1.1.0</aws.lambda.version>
 		<aws.alexa.skillkit.version>1.1.3</aws.alexa.skillkit.version>
 	</properties>
@@ -33,8 +34,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
+			<artifactId>slf4j-log4j12</artifactId>
 			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -75,7 +81,7 @@
 			<artifactId>commons-io</artifactId>
 			<version>${apache.commons-io.version}</version>
 		</dependency>
-		
+
 		<!-- See https://forums.aws.amazon.com/thread.jspa?threadID=234161 -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -95,7 +101,7 @@
 			<version>${fasterxml.jackson.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

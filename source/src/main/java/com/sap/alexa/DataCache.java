@@ -11,12 +11,18 @@ public class DataCache<K> implements Serializable {
 	private EntityContainer<K> entityContainer;
 	private transient List<K> workingSet;
 	private int index = 0;
+	
+	public DataCache() {}
 
 	public DataCache(EntityContainer<K> entityContainer) {
 		this.entityContainer = entityContainer;
 		if (entityContainer != null && entityContainer.getEntities() != null) {
 			this.workingSet = this.entityContainer.getEntities();
 		}
+	}
+	
+	public void setEntityContainer(EntityContainer<K> entityContainer) {
+		this.entityContainer = entityContainer;
 	}
 
 	public EntityContainer<K> getEntityContainer() {
@@ -32,21 +38,25 @@ public class DataCache<K> implements Serializable {
 		this.workingSet = entityContainer.getEntities();
 		++index;
 	}
+	
+	public void setWorkingSet(List<K> workingSet) {
+		this.workingSet = workingSet;
+	}
 
 	public List<K> getWorkingSet() {
 		return workingSet;
 	}
+	
+	public void setIndex(int index) {
+		this.index = index;
+	}
 
-	public int index() {
+	public int getIndex() {
 		return index;
 	}
 
 	public int skip() {
 		return (index + 1) * 5;
-	}
-
-	public K find() {
-		return null;
 	}
 
 	public boolean hasMore() {

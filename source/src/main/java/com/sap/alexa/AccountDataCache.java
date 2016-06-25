@@ -6,6 +6,9 @@ import com.sap.alexa.shared.AccountEntityContainer;
 @SuppressWarnings("serial")
 public class AccountDataCache extends DataCache<Account> {
 
+	public AccountDataCache() {
+	}
+	
 	public AccountDataCache(AccountEntityContainer entityContainer) {
 		super(entityContainer);
 	}
